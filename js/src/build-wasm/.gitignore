@@ -1,0 +1,9 @@
+# Build artifacts (everything produced by ../build-wasm.sh lives here).
+/out/
+
+# Browser artifacts copied next to demo/index.html by demo/serve.sh.
+# For GitHub Pages you must publish these too: either force-add them
+# (git add -f demo/js-web.js demo/js-web.wasm) or copy them in during a
+# deploy workflow.
+/demo/js-web.js
+/demo/js-web.wasm

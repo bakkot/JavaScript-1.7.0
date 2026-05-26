@@ -1,0 +1,7 @@
+#!/bin/sh
+# Convenience wrapper: run the wasm JS shell under node.
+#   ./js script.js          run a file
+#   ./js -i                 interactive REPL
+#   ./js -v 170 -f file.js  enable JavaScript 1.7 syntax, then run file
+#   echo 'print(1+2)' | ./js
+exec node "$(dirname "$0")/out/js.js" "$@"

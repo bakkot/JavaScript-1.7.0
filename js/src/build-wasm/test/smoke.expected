@@ -1,0 +1,9 @@
+len=78889
+regex=true
+sort=12310
+math=1028
+date=1970
+caught=boom
+closure=42
+uneval=({x:1, y:[2, 3]})
+OK
