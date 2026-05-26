@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpiderMonkey 1.7 (wasm) playground</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 1.5rem; max-width: 60rem; }
+  h1 { font-size: 1.25rem; }
+  p.sub { color: #555; margin-top: -0.5rem; }
+  textarea {
+    width: 100%; height: 16rem; box-sizing: border-box;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px;
+    padding: 0.5rem; tab-size: 2;
+  }
+  .controls { margin: 0.5rem 0; display: flex; gap: 1rem; align-items: center; }
+  button { font-size: 14px; padding: 0.4rem 1rem; cursor: pointer; }
+  button:disabled { cursor: default; opacity: 0.6; }
+  #out {
+    white-space: pre-wrap; word-break: break-word;
+    font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px;
+    background: #111; color: #ddd; padding: 0.75rem; border-radius: 4px;
+    min-height: 6rem; margin-top: 0.5rem;
+  }
+  #out .err { color: #ff8b8b; }
+  #out .meta { color: #7fb; }
+  label { user-select: none; }
+</style>
+</head>
+<body>
+<h1>SpiderMonkey 1.7.0 &mdash; WebAssembly playground</h1>
+<p class="sub">A 2006-era JavaScript engine, compiled to wasm and running in your browser.</p>
+
+<textarea id="src" spellcheck="false">// Try me. Output goes to the box below via print().
+print("Hello from SpiderMonkey " + version());
+
+var primes = [];
+for (var n = 2; primes.length < 10; n++) {
+  var prime = true;
+  for (var i = 2; i * i <= n; i++) if (n % i === 0) { prime = false; break; }
+  if (prime) primes.push(n);
+}
+print("first ten primes: " + primes.join(", "));
+
+// Enable "JavaScript 1.7 syntax" below to use yield/let/destructuring/comprehensions.
+</textarea>
+
+<div class="controls">
+  <button id="run">Run &#9654;</button>
+  <label><input type="checkbox" id="v17"> JavaScript 1.7 syntax (<code>-v 170</code>)</label>
+  <span id="status"></span>
+</div>
+
+<div id="out"></div>
+
+<!-- Default MODULARIZE build: this <script> defines a global createJsShell factory.
+     js-web.js / js-web.wasm are expected alongside this file (copy them in with
+     serve.sh, or commit them, for GitHub Pages). It loads js-web.wasm from the
+     same directory automatically. -->
+<script src="js-web.js"></script>
+<script>
+const srcEl    = document.getElementById('src');
+const outEl    = document.getElementById('out');
+const runBtn   = document.getElementById('run');
+const v17El    = document.getElementById('v17');
+const statusEl = document.getElementById('status');
+
+function append(text, cls) {
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = text + '\n';
+  outEl.appendChild(span);
+}
+
+async function run() {
+  runBtn.disabled = true;
+  statusEl.textContent = 'running…';
+  outEl.textContent = '';
+
+  // A fresh module instance per run = fresh engine state, like a new process.
+  // (The wasm binary is fetched once and cached by the browser.)
+  let mod;
+  try {
+    mod = await createJsShell({
+      print:    (t) => append(t),
+      printErr: (t) => append(t, 'err'),
+    });
+  } catch (e) {
+    append('failed to load wasm module: ' + e, 'err');
+    runBtn.disabled = false; statusEl.textContent = '';
+    return;
+  }
+
+  mod.FS.writeFile('/input.js', srcEl.value);
+  const args = [];
+  if (v17El.checked) args.push('-v', '170');   // must precede -f: sets version before parse
+  args.push('-f', '/input.js');
+
+  let code = 0;
+  try {
+    code = mod.callMain(args);
+  } catch (e) {
+    append('' + e, 'err');
+  }
+  append('[exit ' + (code | 0) + ']', 'meta');
+
+  runBtn.disabled = false;
+  statusEl.textContent = '';
+}
+
+runBtn.addEventListener('click', run);
+// Ctrl/Cmd+Enter to run.
+srcEl.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); run(); }
+});
+</script>
+</body>
+</html>
