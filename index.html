@@ -32,17 +32,8 @@
 <p class="sub">A 2006-era JavaScript engine, compiled to wasm and running in your browser.</p>
 
 <textarea id="src" spellcheck="false">// Try me. Output goes to the box below via print().
-print("Hello from SpiderMonkey " + version());
-
-var primes = [];
-for (var n = 2; primes.length < 10; n++) {
-  var prime = true;
-  for (var i = 2; i * i <= n; i++) if (n % i === 0) { prime = false; break; }
-  if (prime) primes.push(n);
-}
-print("first ten primes: " + primes.join(", "));
-
-// Enable "JavaScript 1.7 syntax" below to use yield/let/destructuring/comprehensions.
+Object.prototype.__defineSetter__("x", function (v) { print("setter called with", v); });
+var obj = { x: 42 };
 </textarea>
 
 <div class="controls">
@@ -50,6 +41,8 @@ print("first ten primes: " + primes.join(", "));
   <label><input type="checkbox" id="v17"> JavaScript 1.7 syntax (<code>-v 170</code>)</label>
   <span id="status"></span>
 </div>
+
+<div>Enable "JavaScript 1.7 syntax" to use yield/let/destructuring/comprehensions.</div>
 
 <div id="out"></div>
 
