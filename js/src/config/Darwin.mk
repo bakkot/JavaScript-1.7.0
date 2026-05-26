@@ -46,6 +46,9 @@
 CC = cc
 CCC = g++
 CFLAGS +=  -Wall -Wno-format
+# This is 2006-era K&R-ish C. Modern clang (16+) promotes these to hard
+# errors; demote them back to warnings so the tree builds as-is.
+CFLAGS += -Wno-implicit-function-declaration -Wno-implicit-int -Wno-deprecated-non-prototype
 OS_CFLAGS = -DXP_UNIX -DSVR4 -DSYSV -D_BSD_SOURCE -DPOSIX_SOURCE -DDARWIN
 
 RANLIB = ranlib
